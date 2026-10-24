@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAT Mastery - Tự học Nguyên hàm</title>
+    <!-- Tích hợp MathJax để hiển thị công thức toán học -->
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --sat-blue-dark: #0b2046;
+            --sat-blue-main: #1a4b8c;
+            --sat-blue-light: #e6f0fa;
+            --sat-accent: #f39c12;
+            --text-dark: #333;
+            --text-light: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: var(--text-dark);
+        }
+
+        /* Header & Nav */
+        header {
+            background-color: var(--sat-blue-dark);
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--sat-accent); }
+        
+        nav button {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-left: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        nav button:hover, nav button.active {
+            background-color: var(--sat-blue-main);
+            color: var(--sat-accent);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Theory Section */
+        .theory-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--sat-blue-main);
+        }
+        .theory-card h3 { color: var(--sat-blue-main); margin-bottom: 1rem; }
+        .theory-card p { margin-bottom: 0.8rem; line-height: 1.6; }
+        .formula-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        .formula-table th, .formula-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        .formula-table th { background-color: var(--sat-blue-light); color: var(--sat-blue-dark); }
+
+        /* Quiz Section */
+        .quiz-menu {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background-color: var(--sat-blue-main);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        .btn-primary:hover { background-color: var(--sat-blue-dark); }
+        .btn-primary:disabled { background-color: #6c757d; cursor: not-allowed; }
+        
+        .quiz-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+            color: var(--sat-blue-main);
+        }
+
+        .timer { color: #e74c3c; font-size: 1.2rem; font-weight: bold; }
+
+        .options { list-style: none; }
+        .options li {
+            background: var(--sat-blue-light);
+            margin-bottom: 0.8rem;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 2px solid transparent;
+            font-size: 1.1rem;
+            line-height: 1.6; /* Thêm line-height để công thức không bị chồng chéo */
+        }
+        .options li:hover { background: #d0e3f5; }
+        .options li.selected { border-color: var(--sat-blue-main); background: #bbd6f0; }
+        .options li.correct { background: #d4edda; border-color: #28a745; color: #155724; }
+        .options li.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; }
+        .options li.disabled { pointer-events: none; opacity: 0.8; }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            display: none;
+            line-height: 1.6;
+        }
+        .feedback.show { display: block; }
+        .feedback.error { background: #fff3cd; border: 1px solid #ffeeba; color: #856404; }
+        .feedback.success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .feedback a { color: var(--sat-blue-main); font-weight: bold; text-decoration: underline; cursor: pointer; }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.5rem;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* Result Section */
+        .result-box { text-align: center; padding: 2rem; }
+        .score-circle {
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: var(--sat-blue-main);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0 auto 2rem;
+            box-shadow: 0 4px 10px rgba(26, 75, 140, 0.4);
+        }
+        .evaluation { font-size: 1.2rem; margin-bottom: 1rem; }
+        .suggestion { background: var(--sat-blue-light); padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: left; line-height: 1.6; }
+
+        /* CSS cho nút hiển thị lý thuyết */
+        .link-theory {
+            color: var(--sat-blue-main);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .link-theory:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">SAT Mastery - Nguyên Hàm</div>
+        <nav>
+            <button id="nav-theory" onclick="showSection('theory')" class="active">Lý Thuyết</button>
+            <button id="nav-quick" onclick="showSection('quick-practice')">Luyện Tập Nhanh</button>
+            <button id="nav-mock" onclick="showSection('mock-exam')">Thi Thử (22 Câu)</button>
+        </nav>
+    </header>
+
+    <main class="container">
+        
+        <!-- LÝ THUYẾT -->
+        <section id="theory" class="section active">
+            <h2 style="color: var(--sat-blue-dark); margin-bottom: 1.5rem; text-align: center;">Ôn Tập Lý Thuyết Cốt Lõi</h2>
+            
+            <div class="theory-card" id="ly-thuyet-1">
+                <h3>1. Định nghĩa nguyên hàm & Hằng số C</h3>
+                <p>Hàm số \(F(x)\) được gọi là một nguyên hàm của \(f(x)\) trên khoảng \(K\) nếu \(F'(x) = f(x)\) với mọi \(x \in K\).</p>
+                <p><strong>Họ nguyên hàm:</strong> \(\int f(x) dx = F(x) + C\) (với \(C \in \mathbb{R}\)).</p>
+                <p>Mọi nguyên hàm của \(f(x)\) đều sai khác nhau một hằng số \(C\). Khi lấy đạo hàm của \(F(x) + C\), hằng số \(C\) luôn bị triệt tiêu (đạo hàm của hằng số bằng 0).</p>
+            </div>
+
+            <div class="theory-card" id="ly-thuyet-2">
+                <h3>2. Bảng nguyên hàm cơ bản</h3>
+                <table class="formula-table">
+                    <tr><th>Hàm số \(f(x)\)</th><th>Họ nguyên hàm \(\int f(x) dx\)</th></tr>
+                    <tr><td>\(0\)</td><td>\(C\)</td></tr>
+                    <tr><td>\(1\)</td><td>\(x + C\)</td></tr>
+                    <tr><td>\(x^\alpha \ (\alpha \neq -1)\)</td><td>\(\frac{x^{\alpha+1}}{\alpha+1} + C\)</td></tr>
+                    <tr><td>\(\frac{1}{x}\)</td><td>\(\ln|x| + C\)</td></tr>
+                    <tr><td>\(e^x\)</td><td>\(e^x + C\)</td></tr>
+                    <tr><td>\(a^x \ (0 < a \neq 1)\)</td><td>\(\frac{a^x}{\ln a} + C\)</td></tr>
+                    <tr><td>\(\cos x\)</td><td>\(\sin x + C\)</td></tr>
+                    <tr><td>\(\sin x\)</td><td>\(-\cos x + C\)</td></tr>
+                    <tr><td>\(\frac{1}{\cos^2 x}\)</td><td>\(\tan x + C\)</td></tr>
+                    <tr><td>\(\frac{1}{\sin^2 x}\)</td><td>\(-\cot x + C\)</td></tr>
+                </table>
+            </div>
+
+            <div class="theory-card" id="ly-thuyet-3">
+                <h3>3. Mở rộng với \(ax + b\) (và lỗi thường gặp)</h3>
+                <p>Khi hàm số có dạng \(f(ax+b)\), nguyên hàm sẽ sinh ra thêm hệ số \(\frac{1}{a}\) do quy tắc đạo hàm hàm hợp.</p>
+                <p>Ví dụ: \(\int \cos(2x) dx = \frac{1}{2}\sin(2x) + C\)</p>
+                <p><em>Lưu ý sai lầm:</em> Tuyệt đối không có quy tắc nguyên hàm của tích/thương. Gặp tích/thương phải <strong>khai triển hoặc chia tách</strong> trước khi lấy nguyên hàm.</p>
+            </div>
+
+            <div class="theory-card" id="ly-thuyet-4">
+                <h3>4. Ứng dụng thực tế</h3>
+                <p>Mối quan hệ: Vị trí \(s(t)\) \(\xrightarrow{\text{đạo hàm}}\) Vận tốc \(v(t)\) \(\xrightarrow{\text{đạo hàm}}\) Gia tốc \(a(t)\).</p>
+                <p>Ngược lại, để tìm \(s(t)\) từ \(v(t)\) hay \(a(t)\), ta dùng nguyên hàm và kết hợp <strong>điều kiện ban đầu</strong> (vd: \(v(0)=0, s(0)=0\)) để tìm \(C\).</p>
+            </div>
+        </section>
+
+        <!-- LUYỆN TẬP NHANH -->
+        <section id="quick-practice" class="section">
+            <div id="qp-menu" class="quiz-menu">
+                <button class="btn-primary" onclick="startQuiz('quick', 1)">Bộ 1 (10 câu)</button>
+                <button class="btn-primary" onclick="startQuiz('quick', 2)">Bộ 2 (10 câu)</button>
+                <button class="btn-primary" onclick="startQuiz('quick', 3)">Bộ 3 (10 câu)</button>
+            </div>
+            <div id="qp-container" class="quiz-container" style="display: none;"></div>
+        </section>
+
+        <!-- THI THỬ 22 CÂU -->
+        <section id="mock-exam" class="section">
+            <div id="me-menu" class="quiz-menu">
+                <button class="btn-primary" onclick="startQuiz('mock', 1)">Đề Thi Thử 1</button>
+                <button class="btn-primary" onclick="startQuiz('mock', 2)">Đề Thi Thử 2</button>
+                <button class="btn-primary" onclick="startQuiz('mock', 3)">Đề Thi Thử 3</button>
+            </div>
+            <div id="me-container" class="quiz-container" style="display: none;"></div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- DATA BỘ CÂU HỎI NHANH ---
+        // Đã mã hóa \\ cho toàn bộ các lệnh LaTeX để tránh lỗi hiển thị
+        const quickData = {
+            1: [
+                { q: "Tìm nguyên hàm của hàm số \\(f(x) = x^3\\)", options: ["\\(x^4 + C\\)", "\\(3x^2 + C\\)", "\\(\\frac{x^4}{4} + C\\)", "\\(4x^3 + C\\)"], ans: 2, theoryRef: "ly-thuyet-2", hint: "Sử dụng công thức \\(\\int x^\\alpha dx = \\frac{x^{\\alpha+1}}{\\alpha+1} + C\\)." },
+                { q: "\\(\\int \\frac{1}{x} dx\\) bằng?", options: ["\\(\\ln|x| + C\\)", "\\(\\ln(x) + C\\)", "\\(-\\frac{1}{x^2} + C\\)", "\\(x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Chú ý dấu giá trị tuyệt đối vì x chưa chắc dương." },
+                { q: "Tìm nguyên hàm của \\(f(x) = e^{2x}\\)", options: ["\\(e^{2x} + C\\)", "\\(2e^{2x} + C\\)", "\\(\\frac{1}{2}e^{2x} + C\\)", "\\(e^x + C\\)"], ans: 2, theoryRef: "ly-thuyet-3", hint: "Hàm mũ mở rộng (ax+b): đạo hàm \\(e^{2x}\\) sinh ra thừa số 2, nên nguyên hàm phải chia 2." },
+                { q: "\\(\\int \\cos x dx\\) bằng?", options: ["\\(\\sin x + C\\)", "\\(-\\sin x + C\\)", "\\(\\cos x + C\\)", "\\(-\\cos x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của \\(\\sin x\\) là \\(\\cos x\\)." },
+                { q: "Nguyên hàm của \\(f(x) = 0\\) là?", options: ["\\(x + C\\)", "\\(C\\)", "\\(0\\)", "\\(\\ln|x| + C\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của một hằng số bất kỳ bằng 0." },
+                { q: "Tìm \\(\\int (2x + 1) dx\\)", options: ["\\(x^2 + x + C\\)", "\\(2x^2 + x + C\\)", "\\(x^2 + C\\)", "\\(2x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Áp dụng tính chất tách tổng \\(\\int [f(x) \\pm g(x)]dx\\)." },
+                { q: "\\(\\int \\sin(2x) dx\\) bằng?", options: ["\\(-\\frac{1}{2} \\cos(2x) + C\\)", "\\(\\frac{1}{2} \\cos(2x) + C\\)", "\\(-\\cos(2x) + C\\)", "\\(2\\cos(2x) + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Đạo hàm của \\(\\cos(2x)\\) là \\(-2\\sin(2x)\\), nên ta cần một hệ số để triệt tiêu." },
+                { q: "Tích của nguyên hàm \\(\\int f(x)dx\\) và \\(\\int g(x)dx\\) có bằng \\(\\int f(x)g(x)dx\\) không?", options: ["Có", "Không"], ans: 1, theoryRef: "ly-thuyet-3", hint: "Xem lại cảnh báo sai lầm trong phần lý thuyết: Không có quy tắc nguyên hàm của tích." },
+                { q: "Tìm nguyên hàm \\(F(x)\\) của \\(f(x) = 2x\\) biết \\(F(0) = 1\\)", options: ["\\(x^2 + 1\\)", "\\(x^2\\)", "\\(2x^2 + 1\\)", "\\(x^2 - 1\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "Tìm họ nguyên hàm \\(x^2 + C\\), sau đó thay \\(x=0, F=1\\) để tìm \\(C\\)." },
+                { q: "Vận tốc \\(v(t)\\) là đạo hàm hay nguyên hàm của gia tốc \\(a(t)\\)?", options: ["Đạo hàm", "Nguyên hàm"], ans: 1, theoryRef: "ly-thuyet-4", hint: "\\(a(t)\\) là đạo hàm của \\(v(t)\\). Vậy ngược lại, \\(v(t)\\) là gì của \\(a(t)\\)?" }
+            ],
+            2: [
+                { q: "\\(\\int x^2 dx\\) bằng?", options: ["\\(x^3 + C\\)", "\\(\\frac{x^3}{3} + C\\)", "\\(3x^2 + C\\)", "\\(\\frac{x^2}{2} + C\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "Tăng mũ thêm 1 và chia cho mũ mới." },
+                { q: "Họ nguyên hàm của \\(f(x) = \\frac{1}{2x+1}\\) là?", options: ["\\(\\ln|2x+1| + C\\)", "\\(\\frac{1}{2} \\ln|2x+1| + C\\)", "\\(2 \\ln|2x+1| + C\\)", "\\(\\frac{1}{(2x+1)^2} + C\\)"], ans: 1, theoryRef: "ly-thuyet-3", hint: "Dùng công thức mở rộng \\(\\int \\frac{1}{ax+b}dx = \\frac{1}{a}\\ln|ax+b| + C\\)." },
+                { q: "\\(\\int 0 dx\\) bằng?", options: ["\\(x + C\\)", "\\(C\\)", "\\(0\\)", "\\(1\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "Nguyên hàm của số 0 là một hằng số." },
+                { q: "Tìm nguyên hàm của \\(f(x) = x\\)", options: ["\\(x^2 + C\\)", "\\(2x + C\\)", "\\(\\frac{x^2}{2} + C\\)", "\\(1 + C\\)"], ans: 2, theoryRef: "ly-thuyet-2", hint: "Áp dụng công thức lũy thừa \\(x^1\\)." },
+                { q: "\\(\\int e^x dx\\) bằng?", options: ["\\(e^x + C\\)", "\\(x.e^{x-1} + C\\)", "\\(\\frac{e^x}{x} + C\\)", "\\(\\ln|e^x| + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của \\(e^x\\) là chính nó." },
+                { q: "\\(\\int (x + 1)(x - 2) dx\\) bằng?", options: ["\\((\\frac{x^2}{2} + x)(\\frac{x^2}{2} - 2x) + C\\)", "\\(\\frac{x^3}{3} - \\frac{x^2}{2} - 2x + C\\)", "\\(\\frac{x^3}{3} + \\frac{x^2}{2} - 2x + C\\)", "\\(x^2 - x - 2 + C\\)"], ans: 1, theoryRef: "ly-thuyet-3", hint: "Khai triển thành \\(x^2 - x - 2\\) rồi mới lấy nguyên hàm từng số hạng." },
+                { q: "Hàm số \\(F(x) = \\sin x\\) là nguyên hàm của hàm số nào?", options: ["\\(f(x) = \\cos x\\)", "\\(f(x) = -\\cos x\\)", "\\(f(x) = -\\sin x\\)", "\\(f(x) = \\sin x\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Lấy đạo hàm của \\(F(x)\\) để tìm \\(f(x)\\)." },
+                { q: "\\(\\int \\cos(3x) dx\\) bằng?", options: ["\\(\\frac{1}{3} \\sin(3x) + C\\)", "\\(3 \\sin(3x) + C\\)", "\\(-\\frac{1}{3} \\sin(3x) + C\\)", "\\(-3 \\sin(3x) + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hàm hợp với hệ số \\(a = 3\\)." },
+                { q: "Nếu \\(F'(x) = f(x)\\) thì \\(F(x)\\) là...", options: ["Đạo hàm của \\(f(x)\\)", "Nguyên hàm của \\(f(x)\\)", "Tích phân của \\(f(x)\\)", "Nghịch đảo của \\(f(x)\\)"], ans: 1, theoryRef: "ly-thuyet-1", hint: "Định nghĩa cơ bản của nguyên hàm." },
+                { q: "Trong bài toán chuyển động, nếu biết gia tốc \\(a(t)\\), muốn tìm quãng đường \\(s(t)\\) ta cần lấy nguyên hàm bao nhiêu lần?", options: ["1 lần", "2 lần", "3 lần", "Không cần"], ans: 1, theoryRef: "ly-thuyet-4", hint: "\\(a \\to v \\to s\\). Cần nguyên hàm 2 lần." }
+            ],
+            3: [
+                { q: "Nguyên hàm của \\(f(x) = 3x^2\\) là?", options: ["\\(x^3 + C\\)", "\\(6x + C\\)", "\\(3x^3 + C\\)", "\\(\\frac{x^3}{3} + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của \\(x^3\\) là \\(3x^2\\)." },
+                { q: "Tìm \\(\\int \\frac{1}{x^2} dx\\)", options: ["\\(-\\frac{1}{x} + C\\)", "\\(\\ln|x^2| + C\\)", "\\(-\\frac{2}{x^3} + C\\)", "\\(\\frac{1}{x} + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Viết lại thành \\(x^{-2}\\) rồi áp dụng công thức lũy thừa." },
+                { q: "\\(\\int \\frac{1}{\\cos^2 x} dx\\) bằng?", options: ["\\(\\tan x + C\\)", "\\(\\cot x + C\\)", "\\(-\\tan x + C\\)", "\\(\\cos x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Công thức đạo hàm của \\(\\tan x\\)." },
+                { q: "Khi tìm nguyên hàm của hàm số mũ \\(a^x\\), mẫu số xuất hiện là gì?", options: ["\\(x\\)", "\\(a\\)", "\\(\\ln a\\)", "\\(a^x\\)"], ans: 2, theoryRef: "ly-thuyet-2", hint: "Công thức \\(\\int a^x dx = \\frac{a^x}{\\ln a} + C\\)." },
+                { q: "\\(F(x) = x^2 + C\\). Đồ thị của các hàm này có đặc điểm gì?", options: ["Cắt nhau", "Song song với nhau", "Trùng nhau", "Đối xứng qua trục tung"], ans: 1, theoryRef: "ly-thuyet-1", hint: "Chúng là các đường cong tịnh tiến theo trục Oy." },
+                { q: "\\(\\int e^{3x-1} dx\\) bằng?", options: ["\\(\\frac{1}{3} e^{3x-1} + C\\)", "\\(3e^{3x-1} + C\\)", "\\(e^{3x-1} + C\\)", "\\((3x-1)e^{3x-1} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hệ số \\(a\\) của \\((ax+b)\\) là 3." },
+                { q: "Để tính nguyên hàm của \\(f(x) = \\tan^2 x\\), ta làm gì?", options: ["Dùng bảng trực tiếp", "Áp dụng \\(\\tan^2 x = \\frac{1}{\\cos^2 x} - 1\\)", "Khai triển thành \\(\\sin/\\cos\\)", "Không tính được"], ans: 1, theoryRef: "ly-thuyet-3", hint: "Biến đổi lượng giác để quy về bảng cơ bản." },
+                { q: "Nếu vật chuyển động với \\(v(t) = 0\\) tại \\(t = 2s\\), vật đang ở đâu trong quá trình chuyển động?", options: ["Tăng tốc", "Giảm tốc", "Đổi chiều chuyển động", "Dừng lại vĩnh viễn"], ans: 2, theoryRef: "ly-thuyet-4", hint: "Vận tốc đổi dấu khi đi qua giá trị 0." },
+                { q: "Sai lầm khi viết \\(\\int \\frac{1}{x} dx = \\ln(x) + C\\) là gì?", options: ["Thừa \\(+C\\)", "Thiếu dấu giá trị tuyệt đối", "Không có sai lầm", "Thiếu hệ số \\(1/2\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "Hàm \\(\\ln(x)\\) chỉ xác định với \\(x > 0\\)." },
+                { q: "Điều kiện ban đầu \\(F(0) = 5\\) giúp ta tìm ra gì?", options: ["Hàm số \\(f(x)\\)", "Hằng số \\(C\\)", "Cận tích phân", "Đạo hàm \\(F'(x)\\)"], ans: 1, theoryRef: "ly-thuyet-1", hint: "C là hằng số duy nhất chưa biết trong họ nguyên hàm." }
+            ]
+        };
+
+        // --- DATA ĐỀ THI THỬ 22 CÂU (3 ĐỀ) ---
+        const mockData1 = [
+            { q: "Tìm nguyên hàm của hàm số \\(f(x) = 2x + 3\\)", options: ["\\(x^2 + 3x + C\\)", "\\(2x^2 + 3x + C\\)", "\\(x^2 + 3 + C\\)", "\\(2 + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Nguyên hàm của \\(2x\\) là \\(x^2\\), của \\(3\\) là \\(3x\\)." },
+            { q: "Cho \\(F(x)\\) là một nguyên hàm của \\(f(x) = e^x\\) thỏa mãn \\(F(0) = 2\\). Khẳng định nào đúng?", options: ["\\(F(x) = e^x + 1\\)", "\\(F(x) = e^x + 2\\)", "\\(F(x) = e^x - 1\\)", "\\(F(x) = 2e^x\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(F(x) = e^x + C\\). \\(F(0)=2 \\Rightarrow 1 + C = 2 \\Rightarrow C=1\\)." },
+            { q: "Họ nguyên hàm của \\(f(x) = \\cos(2x)\\) là:", options: ["\\(\\sin(2x) + C\\)", "\\(\\frac{1}{2}\\sin(2x) + C\\)", "\\(-2\\sin(2x) + C\\)", "\\(-\\frac{1}{2}\\sin(2x) + C\\)"], ans: 1, theoryRef: "ly-thuyet-3", hint: "Hàm hợp \\(\\cos(ax+b)\\), nhân thêm \\(\\frac{1}{a}\\)." },
+            { q: "Tìm \\(\\int (x^3 + 1) dx\\)", options: ["\\(\\frac{x^4}{4} + x + C\\)", "\\(3x^2 + C\\)", "\\(x^4 + x + C\\)", "\\(\\frac{x^4}{4} + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Tách tổng, dùng công thức bảng." },
+            { q: "Nếu \\(v(t)\\) là vận tốc của vật, thì nguyên hàm của \\(v(t)\\) là gì?", options: ["Gia tốc", "Quãng đường", "Thời gian", "Khối lượng"], ans: 1, theoryRef: "ly-thuyet-4", hint: "\\(s'(t) = v(t)\\)." },
+            { q: "Tìm \\(\\int \\frac{1}{x-1} dx\\) trên khoảng \\((1; +\\infty)\\)", options: ["\\(\\ln(x-1) + C\\)", "\\(\\ln|x-1| + C\\)", "\\(\\frac{1}{(x-1)^2} + C\\)", "\\(-\\frac{1}{x-1} + C\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "Công thức cơ bản \\(\\int \\frac{1}{u} du\\)." },
+            { q: "Đạo hàm của hàm số \\(F(x) = x^2 + 5x - 3\\) là:", options: ["\\(2x + 5\\)", "\\(x^2 + 5\\)", "\\(2x - 3\\)", "\\(2x\\)"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Áp dụng quy tắc đạo hàm cơ bản." },
+            { q: "Hàm số nào sau đây KHÔNG phải là nguyên hàm của \\(f(x) = 2x\\)?", options: ["\\(x^2\\)", "\\(x^2 + 2024\\)", "\\(x^2 - 5\\)", "\\(2x^2\\)"], ans: 3, theoryRef: "ly-thuyet-1", hint: "Đạo hàm của \\(2x^2\\) là \\(4x\\), không phải \\(2x\\)." },
+            { q: "Tìm \\(\\int \\frac{1}{\\sin^2 x} dx\\)", options: ["\\(-\\cot x + C\\)", "\\(\\cot x + C\\)", "\\(\\tan x + C\\)", "\\(-\\tan x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của \\(\\cot x\\) là \\(-\\frac{1}{\\sin^2 x}\\)." },
+            { q: "Một vật chuyển động với gia tốc \\(a(t) = 2 \\ (m/s^2)\\). Biết \\(v(0) = 0\\). Hỏi vận tốc tại thời điểm \\(t=3s\\) là bao nhiêu?", options: ["2 m/s", "6 m/s", "3 m/s", "9 m/s"], ans: 1, theoryRef: "ly-thuyet-4", hint: "\\(v(t) = \\int a(t)dt = 2t + C\\). \\(v(0)=0 \\Rightarrow C=0\\). \\(v(3)=2 \\times 3=6\\)." },
+            { q: "Tìm nguyên hàm của \\(f(x) = \\sin(\\frac{x}{2})\\)", options: ["\\(-2\\cos(\\frac{x}{2}) + C\\)", "\\(2\\cos(\\frac{x}{2}) + C\\)", "\\(-\\frac{1}{2}\\cos(\\frac{x}{2}) + C\\)", "\\(\\frac{1}{2}\\cos(\\frac{x}{2}) + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hàm \\(\\sin(ax+b) \\Rightarrow -\\frac{1}{a} \\cos(ax+b)\\). \\(a = 1/2\\)." },
+            { q: "Tính \\(\\int (3x^2 - 2x + 1) dx\\)", options: ["\\(x^3 - x^2 + x + C\\)", "\\(3x^3 - x^2 + x + C\\)", "\\(x^3 - 2x^2 + x + C\\)", "\\(x^3 - x^2 + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Nguyên hàm từng số hạng." },
+            { q: "Điều kiện \\(F(1) = 2\\) dùng để làm gì?", options: ["Tìm tập xác định", "Tìm hằng số \\(C\\)", "Tìm hàm số \\(f(x)\\)", "Tính đạo hàm"], ans: 1, theoryRef: "ly-thuyet-4", hint: "Mỗi nguyên hàm có dạng \\(F(x) + C\\)." },
+            { q: "Biết \\(\\int f(x)dx = x^2 + C\\). Hỏi \\(f(x)\\) là hàm nào?", options: ["\\(f(x) = 2x\\)", "\\(f(x) = x^2\\)", "\\(f(x) = x\\)", "\\(f(x) = 2\\)"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Lấy đạo hàm của \\(x^2\\)." },
+            { q: "Tìm \\(\\int e^{-x} dx\\)", options: ["\\(-e^{-x} + C\\)", "\\(e^{-x} + C\\)", "\\(-x.e^{-x} + C\\)", "\\(\\frac{1}{x} e^{-x} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hàm \\(e^{ax+b}\\), \\(a = -1\\)." },
+            { q: "Họ nguyên hàm của \\(f(x) = 2\\) là", options: ["\\(x + C\\)", "\\(2x + C\\)", "\\(2 + C\\)", "\\(x^2 + C\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "Nguyên hàm của hằng số \\(k\\) là \\(kx + C\\)." },
+            { q: "Trong các khẳng định sau, khẳng định nào đúng?", options: ["\\(\\int f(x)g(x)dx = \\int f(x)dx \\cdot \\int g(x)dx\\)", "\\(\\int [f(x)+g(x)]dx = \\int f(x)dx + \\int g(x)dx\\)", "\\(\\int [f(x)-g(x)]dx = \\int f(x)dx - \\int g(x)dx + C\\)", "Cả B và C đều đúng"], ans: 1, theoryRef: "ly-thuyet-3", hint: "Tính chất cơ bản của nguyên hàm (T3)." },
+            { q: "Nguyên hàm của hàm số \\(f(x) = x^{1/2}\\) là?", options: ["\\(\\frac{2}{3} x^{3/2} + C\\)", "\\(\\frac{1}{2} x^{3/2} + C\\)", "\\(x^{3/2} + C\\)", "\\(\\frac{3}{2} x^{3/2} + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "\\(x^a \\to \\frac{x^{a+1}}{a+1}\\). \\(a=1/2 \\Rightarrow a+1 = 3/2\\)." },
+            { q: "Tìm \\(\\int (2x + 1)^2 dx\\)", options: ["\\(\\frac{(2x+1)^3}{6} + C\\)", "\\(\\frac{(2x+1)^3}{3} + C\\)", "\\(\\frac{(2x+1)^3}{2} + C\\)", "\\(2(2x+1)^3 + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Công thức \\((ax+b)^n \\to \\frac{1}{a} \\frac{(ax+b)^{n+1}}{n+1}\\)." },
+            { q: "Một chiếc xe đang chạy với \\(v=10m/s\\) thì hãm phanh với gia tốc \\(a = -2m/s^2\\). Hàm vận tốc là:", options: ["\\(v(t) = 10 - 2t\\)", "\\(v(t) = 10 + 2t\\)", "\\(v(t) = -2t\\)", "\\(v(t) = 10 - t^2\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(v(t) = \\int a(t)dt = -2t + C\\). \\(v(0)=10 \\Rightarrow C=10\\)." },
+            { q: "Đâu là công thức sai?", options: ["\\(\\int x^2 dx = \\frac{x^3}{3} + C\\)", "\\(\\int \\sin x dx = \\cos x + C\\)", "\\(\\int \\frac{1}{x} dx = \\ln|x| + C\\)", "\\(\\int e^x dx = e^x + C\\)"], ans: 1, theoryRef: "ly-thuyet-2", hint: "\\(\\int \\sin x dx = -\\cos x + C\\)." },
+            { q: "Tìm \\(F(x)\\) biết \\(F'(x) = 3x^2 + 2x\\) và \\(F(0) = 1\\)", options: ["\\(x^3 + x^2 + 1\\)", "\\(x^3 + x^2\\)", "\\(3x^3 + 2x^2 + 1\\)", "\\(x^3 + x^2 - 1\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(F(x) = x^3 + x^2 + C\\). \\(F(0)=1 \\Rightarrow C=1\\)." }
+        ];
+
+        const mockData2 = [
+            { q: "Tìm \\(\\int (4x^3 - 3x^2 + 2x - 5) dx\\)", options: ["\\(x^4 - x^3 + x^2 - 5x + C\\)", "\\(x^4 - x^3 + x^2 + C\\)", "\\(12x^2 - 6x + 2 + C\\)", "\\(x^4 - 3x^3 + x^2 - 5x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Nguyên hàm từng số hạng." },
+            { q: "Tìm \\(\\int (\\frac{5}{x} + e^x - 2\\sin x) dx\\) trên \\((0; +\\infty)\\)", options: ["\\(5\\ln x + e^x + 2\\cos x + C\\)", "\\(5\\ln x + e^x - 2\\cos x + C\\)", "\\(\\frac{5}{x^2} + e^x + 2\\cos x + C\\)", "\\(5\\ln|x| + e^x + 2\\cos x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Vì \\(x>0\\) nên \\(\\ln|x| = \\ln x\\). Nguyên hàm của \\(-\\sin x\\) là \\(\\cos x\\)." },
+            { q: "Tìm \\(\\int (2^x + \\cos x) dx\\)", options: ["\\(\\frac{2^x}{\\ln 2} + \\sin x + C\\)", "\\(2^x + \\sin x + C\\)", "\\(\\frac{2^x}{\\ln 2} - \\sin x + C\\)", "\\(x2^{x-1} + \\sin x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Công thức \\(\\int a^x dx = \\frac{a^x}{\\ln a} + C\\)." },
+            { q: "Tìm \\(\\int (\\frac{1}{\\sin^2 x} + \\cos^2 x) dx\\)", options: ["\\(-\\cot x + \\frac{x}{2} + \\frac{\\sin 2x}{4} + C\\)", "\\(\\cot x + \\frac{x}{2} + \\frac{\\sin 2x}{4} + C\\)", "\\(-\\cot x + x + C\\)", "\\(-\\tan x + \\frac{x}{2} + \\frac{\\sin 2x}{4} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "\\(\\cos^2 x = \\frac{1+\\cos 2x}{2}\\)." },
+            { q: "Tìm \\(\\int (x - 1)^2 dx\\)", options: ["\\(\\frac{(x-1)^3}{3} + C\\)", "\\(\\frac{x^3}{3} - x^2 + x + C\\)", "Cả A và B đều đúng", "\\(2(x-1) + C\\)"], ans: 2, theoryRef: "ly-thuyet-3", hint: "Dùng công thức \\((ax+b)^n\\) hoặc khai triển rồi lấy nguyên hàm. Hai kết quả sai khác hằng số \\(C\\)." },
+            { q: "Tìm \\(\\int \\frac{x^3 - 2x + 1}{x} dx\\) trên \\((0; +\\infty)\\)", options: ["\\(\\frac{x^3}{3} - 2x + \\ln x + C\\)", "\\(\\frac{x^4}{4} - x^2 + x + C\\)", "\\(\\frac{x^3}{3} - 2 + \\ln x + C\\)", "\\(x^2 - 2 + \\frac{1}{x} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Chia từng hạng tử cho \\(x\\): \\(x^2 - 2 + \\frac{1}{x}\\)." },
+            { q: "Tìm \\(\\int \\sin^2 x dx\\)", options: ["\\(\\frac{x}{2} - \\frac{\\sin 2x}{4} + C\\)", "\\(\\frac{x}{2} + \\frac{\\sin 2x}{4} + C\\)", "\\(-\\frac{\\cos^3 x}{3} + C\\)", "\\(x - \\sin 2x + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hạ bậc \\(\\sin^2 x = \\frac{1-\\cos 2x}{2}\\)." },
+            { q: "Tìm \\(\\int (e^{2x} + e^{-x}) dx\\)", options: ["\\(\\frac{1}{2}e^{2x} - e^{-x} + C\\)", "\\(2e^{2x} - e^{-x} + C\\)", "\\(\\frac{1}{2}e^{2x} + e^{-x} + C\\)", "\\(e^{2x} - e^{-x} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hàm \\(e^{ax+b}\\) với \\(a=2\\) và \\(a=-1\\)." },
+            { q: "Tìm \\(\\int [\\cos 3x - \\sin(2x+1)] dx\\)", options: ["\\(\\frac{1}{3}\\sin 3x + \\frac{1}{2}\\cos(2x+1) + C\\)", "\\(\\frac{1}{3}\\sin 3x - \\frac{1}{2}\\cos(2x+1) + C\\)", "\\(-\\frac{1}{3}\\sin 3x + \\frac{1}{2}\\cos(2x+1) + C\\)", "\\(3\\sin 3x + 2\\cos(2x+1) + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Nguyên hàm của \\(-\\sin\\) là \\(\\cos\\), nhớ hệ số \\(\\frac{1}{2}\\) của \\(2x+1\\)." },
+            { q: "Tìm \\(\\int 2^x \\cdot 3^x dx\\)", options: ["\\(\\frac{6^x}{\\ln 6} + C\\)", "\\(6^x + C\\)", "\\(2^x \\cdot 3^x + C\\)", "\\(\\frac{2^x}{\\ln 2} \\cdot \\frac{3^x}{\\ln 3} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Gộp \\(2^x \\cdot 3^x = 6^x\\)." },
+            { q: "Tìm \\(F(x)\\) biết \\(F'(x) = \\sin x + 2x\\) và \\(F(0) = 1\\)", options: ["\\(F(x) = x^2 - \\cos x + 2\\)", "\\(F(x) = x^2 - \\cos x\\)", "\\(F(x) = x^2 + \\cos x + 2\\)", "\\(F(x) = -x^2 - \\cos x + 2\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(F(x) = -\\cos x + x^2 + C\\). \\(F(0) = -1 + C = 1 \\Rightarrow C=2\\)." },
+            { q: "Tìm \\(m\\) để \\(F(x) = mx^3 + (3m+2)x^2 - 4x + 3\\) là nguyên hàm của \\(f(x) = 3x^2 + 10x - 4\\)", options: ["\\(m = 1\\)", "\\(m = 2\\)", "\\(m = -1\\)", "\\(m = 0\\)"], ans: 0, theoryRef: "ly-thuyet-1", hint: "\\(F'(x) = 3mx^2 + 2(3m+2)x - 4\\). Đồng nhất hệ số với \\(f(x)\\): \\(3m=3 \\Rightarrow m=1\\)." },
+            { q: "Một ô tô đang chạy với vận tốc \\(20 m/s\\) thì hãm phanh với gia tốc \\(a(t) = -4 m/s^2\\). Tính quãng đường ô tô đi được đến khi dừng hẳn.", options: ["50 m", "100 m", "40 m", "80 m"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(v(t) = -4t + 20\\). Dừng khi \\(v=0 \\Rightarrow t=5\\). \\(s(t) = -2t^2 + 20t \\Rightarrow s(5) = 50\\)." },
+            { q: "Dân số một thị trấn tăng với tốc độ \\(P'(t) = 500e^{0.02t}\\) (người/năm), dân số ban đầu là 10,000. Tìm \\(P(t)\\).", options: ["\\(P(t) = 25000e^{0.02t} - 15000\\)", "\\(P(t) = 25000e^{0.02t} + 10000\\)", "\\(P(t) = 10000e^{0.02t}\\)", "\\(P(t) = 500e^{0.02t} + 9500\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(P(t) = \\frac{500}{0.02} e^{0.02t} + C = 25000e^{0.02t} + C\\). \\(P(0)=10000 \\Rightarrow C = -15000\\)." },
+            { q: "Doanh thu biên khi bán \\(x\\) sản phẩm là \\(R'(x) = 100 - 0.2x\\) (nghìn đồng/sp) và \\(R(0) = 0\\). Tìm \\(R(x)\\)", options: ["\\(R(x) = 100x - 0.1x^2\\)", "\\(R(x) = 100x - 0.2x^2\\)", "\\(R(x) = -0.2x\\)", "\\(R(x) = 100x^2 - 0.1x^3\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(R(x) = \\int (100 - 0.2x) dx = 100x - 0.1x^2 + C\\). \\(R(0)=0 \\Rightarrow C=0\\)." },
+            { q: "Một cây được trồng cao \\(1 m\\), chiều cao tăng với tốc độ \\(h'(t) = 0.3\\sqrt{t}\\) (m/năm). Tìm \\(h(t)\\).", options: ["\\(h(t) = 1 + 0.2t^{3/2}\\)", "\\(h(t) = 1 + 0.3t^{1/2}\\)", "\\(h(t) = 0.2t^{3/2}\\)", "\\(h(t) = 1 + 0.15t^2\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(h(t) = \\int 0.3t^{1/2} dt = 0.3 \\frac{t^{3/2}}{3/2} + C = 0.2t^{3/2} + C\\). \\(h(0)=1 \\Rightarrow C=1\\)." },
+            { q: "Tìm họ nguyên hàm của \\(f(x) = |x|\\) trên \\(\\mathbb{R}\\).", options: ["\\(F(x) = \\frac{x|x|}{2} + C\\)", "\\(F(x) = \\frac{x^2}{2} + C\\)", "\\(F(x) = \\frac{x^3}{3} + C\\)", "Không tồn tại"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Xét \\(x \\ge 0\\) và \\(x < 0\\), đảm bảo hàm liên tục và có đạo hàm tại 0." },
+            { q: "Tìm \\(a, b, c\\) để \\(F(x) = (ax^2 + bx + c)e^{-x}\\) là nguyên hàm của \\(f(x) = (x^2 - 3x + 6)e^{-x}\\)", options: ["\\(a=-1, b=1, c=-5\\)", "\\(a=1, b=-1, c=5\\)", "\\(a=-1, b=-1, c=-5\\)", "\\(a=1, b=1, c=5\\)"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Tính \\(F'(x)\\), đồng nhất hệ số với \\(f(x)\\)." },
+            { q: "Vì sao \\(\\int \\frac{1}{x} dx = \\ln|x| + C\\) chứ không phải \\(\\ln x + C\\)?", options: ["Vì \\(\\ln x\\) chỉ xác định với \\(x>0\\)", "Vì \\(\\ln x\\) có đạo hàm khác \\(1/x\\) khi \\(x<0\\)", "Cả A và B đều đúng", "Do quy ước"], ans: 2, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của \\(\\ln(-x)\\) cũng là \\(1/x\\)." },
+            { q: "Cho \\(\\int f(x) dx = F(x) + C\\). Khẳng định nào sau đây đúng?", options: ["\\(F'(x) = f(x)\\)", "\\(f'(x) = F(x)\\)", "\\(F(x) = f'(x)\\)", "\\(F(x) = \\int f'(x) dx\\)"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Định nghĩa nguyên hàm." },
+            { q: "Nguyên hàm của hàm số \\(f(x) = \\tan^2 x\\) là:", options: ["\\(\\tan x - x + C\\)", "\\(\\tan x + x + C\\)", "\\(\\cot x - x + C\\)", "\\(-\\tan x + x + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "\\(\\tan^2 x = \\frac{1}{\\cos^2 x} - 1\\)." }
+        ];
+
+        const mockData3 = [
+            { q: "Tìm \\(\\int x^4 dx\\)", options: ["\\(\\frac{x^5}{5} + C\\)", "\\(4x^3 + C\\)", "\\(x^5 + C\\)", "\\(\\frac{x^4}{4} + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Công thức cơ bản." },
+            { q: "Tìm \\(\\int \\frac{1}{3x+2} dx\\)", options: ["\\(\\frac{1}{3}\\ln|3x+2| + C\\)", "\\(3\\ln|3x+2| + C\\)", "\\(\\ln|3x+2| + C\\)", "\\(-\\frac{3}{(3x+2)^2} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hàm hợp với \\(a=3\\)." },
+            { q: "\\(\\int \\sin x dx\\) bằng?", options: ["\\(-\\cos x + C\\)", "\\(\\cos x + C\\)", "\\(\\sin x + C\\)", "\\(-\\sin x + C\\)"], ans: 0, theoryRef: "ly-thuyet-2", hint: "Đạo hàm của \\(\\cos x\\) là \\(-\\sin x\\)." },
+            { q: "Tìm \\(\\int e^{x+1} dx\\)", options: ["\\(e^{x+1} + C\\)", "\\(\\frac{1}{x+1}e^{x+1} + C\\)", "\\(e^x + e + C\\)", "\\((x+1)e^{x+1} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "\\(e^{x+1} = e \\cdot e^x\\)." },
+            { q: "Tìm \\(\\int (2 - 3x)^2 dx\\)", options: ["\\(-\\frac{(2-3x)^3}{9} + C\\)", "\\(\\frac{(2-3x)^3}{3} + C\\)", "\\(-\\frac{(2-3x)^3}{3} + C\\)", "\\(\\frac{(2-3x)^3}{-9} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "\\((ax+b)^n \\Rightarrow \\frac{1}{a} \\frac{(ax+b)^{n+1}}{n+1}\\). \\(a=-3\\)." },
+            { q: "Hàm số \\(F(x) = 3x^2 + \\sin x\\) là nguyên hàm của hàm số nào?", options: ["\\(f(x) = 6x + \\cos x\\)", "\\(f(x) = 3x^2 + \\cos x\\)", "\\(f(x) = 6x - \\cos x\\)", "\\(f(x) = x^3 - \\cos x\\)"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Lấy đạo hàm của \\(F(x)\\)." },
+            { q: "Nếu \\(F(x)\\) là nguyên hàm của \\(f(x)\\) và \\(G(x)\\) là nguyên hàm của \\(g(x)\\) thì \\(F(x) + G(x)\\) là nguyên hàm của:", options: ["\\(f(x) + g(x)\\)", "\\(f(x) \\cdot g(x)\\)", "\\(f(x) - g(x)\\)", "\\(F(x) \\cdot G(x)\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Tính chất tuyến tính của nguyên hàm." },
+            { q: "Tìm \\(F(x)\\) biết \\(F'(x) = 4x^3 - 2\\) và \\(F(1) = 3\\)", options: ["\\(F(x) = x^4 - 2x + 4\\)", "\\(F(x) = x^4 - 2x\\)", "\\(F(x) = 4x^4 - 2x + 3\\)", "\\(F(x) = x^4 - 2x + 3\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(F(x) = x^4 - 2x + C\\). \\(F(1) = 1 - 2 + C = 3 \\Rightarrow C=4\\)." },
+            { q: "Một vật chuyển động với \\(v(t) = 3t^2 - 6t \\ (m/s)\\). Tại \\(t=0, s=5m\\). Tìm \\(s(t)\\).", options: ["\\(s(t) = t^3 - 3t^2 + 5\\)", "\\(s(t) = t^3 - 3t^2\\)", "\\(s(t) = 3t^3 - 6t^2 + 5\\)", "\\(s(t) = t^3 - 6t^2 + 5\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(s(t) = \\int v(t) dt = t^3 - 3t^2 + C\\). \\(s(0)=5 \\Rightarrow C=5\\)." },
+            { q: "Với bài toán trên, tại \\(t=3s\\), vật ở vị trí nào?", options: ["5 m", "10 m", "-5 m", "0 m"], ans: 0, theoryRef: "ly-thuyet-4", hint: "Thay \\(t=3\\) vào \\(s(t)\\): \\(27 - 27 + 5 = 5\\)." },
+            { q: "Với bài toán trên, trong khoảng \\((0; 2)\\), vật chuyển động theo chiều nào?", options: ["Chiều dương", "Chiều âm", "Đứng yên", "Không xác định"], ans: 1, theoryRef: "ly-thuyet-4", hint: "\\(v(t) = 3t(t-2) < 0\\) trên \\((0;2)\\)." },
+            { q: "Một vật được ném lên với \\(v_0 = 20 m/s\\), gia tốc \\(a(t) = -9.8 m/s^2\\). Độ cao lớn nhất là (làm tròn 0.1):", options: ["20.4 m", "40.8 m", "10.2 m", "25.0 m"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(v(t) = -9.8t + 20\\). Max khi \\(v=0 \\Rightarrow t \\approx 2.04s\\). \\(s(t) = -4.9t^2 + 20t\\)." },
+            { q: "Chi phí biên của xưởng là \\(C'(x) = 0.04x + 10\\) (nghìn đ/sp), chi phí cố định là 500 nghìn. Tìm \\(C(x)\\).", options: ["\\(C(x) = 0.02x^2 + 10x + 500\\)", "\\(C(x) = 0.04x^2 + 10x + 500\\)", "\\(C(x) = 0.02x^2 + 10x\\)", "\\(C(x) = 0.04x^2 + 10x\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(C(x) = \\int (0.04x + 10) dx = 0.02x^2 + 10x + C\\). \\(C(0)=500\\)." },
+            { q: "Với hàm chi phí trên, chi phí sản xuất 100 sản phẩm là:", options: ["1700 nghìn đồng", "1500 nghìn đồng", "2000 nghìn đồng", "1200 nghìn đồng"], ans: 0, theoryRef: "ly-thuyet-4", hint: "Thay \\(x=100\\) vào \\(C(x) = 0.02(10000) + 10(100) + 500 = 200 + 1000 + 500 = 1700\\)." },
+            { q: "Một bể có 50 lít nước, nước chảy vào với \\(V'(t) = 4 + 0.6t\\) (lít/phút). Tìm \\(V(t)\\).", options: ["\\(V(t) = 0.3t^2 + 4t + 50\\)", "\\(V(t) = 0.6t^2 + 4t + 50\\)", "\\(V(t) = 0.3t^2 + 4t\\)", "\\(V(t) = 4t + 50\\)"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(V(t) = 0.3t^2 + 4t + C\\). \\(V(0)=50 \\Rightarrow C=50\\)." },
+            { q: "Với bài toán trên, sau bao lâu bể đạt 200 lít? (cho \\(\\sqrt{196}=14\\))", options: ["16.7 phút", "10 phút", "20 phút", "5 phút"], ans: 0, theoryRef: "ly-thuyet-4", hint: "\\(0.3t^2 + 4t + 50 = 200 \\Rightarrow 0.3t^2 + 4t - 150 = 0 \\Rightarrow 3t^2 + 40t - 1500 = 0\\). \\(\\Delta = 1600 + 18000 = 19600 \\Rightarrow \\sqrt{\\Delta} = 140\\). \\(t = \\frac{-40+140}{6} = \\frac{100}{6} \\approx 16.7\\)." },
+            { q: "Nguyên hàm của \\(f(x) = \\sin 2x \\cos 2x\\) là:", options: ["\\(-\\frac{1}{8}\\cos 4x + C\\)", "\\(\\frac{1}{8}\\cos 4x + C\\)", "\\(-\\frac{1}{4}\\cos 4x + C\\)", "\\(\\frac{1}{4}\\cos 4x + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "\\(\\sin 2x \\cos 2x = \\frac{1}{2}\\sin 4x\\)." },
+            { q: "Nếu \\(F(x) = x^2\\) là một nguyên hàm của \\(f(x)\\), thì \\(F(x) + 10\\) có phải là nguyên hàm của \\(f(x)\\) không?", options: ["Có", "Không"], ans: 0, theoryRef: "ly-thuyet-1", hint: "Họ nguyên hàm sai khác nhau một hằng số." },
+            { q: "Tìm \\(\\int (1 - 2x)^3 dx\\)", options: ["\\(-\\frac{(1-2x)^4}{8} + C\\)", "\\(\\frac{(1-2x)^4}{4} + C\\)", "\\(-\\frac{(1-2x)^4}{4} + C\\)", "\\(\\frac{(1-2x)^4}{8} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "\\((ax+b)^n\\) với \\(a=-2\\)." },
+            { q: "Nguyên hàm của hàm số \\(f(x) = \\frac{1}{2x}\\) trên \\((0; +\\infty)\\) là:", options: ["\\(\\frac{1}{2}\\ln x + C\\)", "\\(\\ln x + C\\)", "\\(2\\ln x + C\\)", "\\(-\\frac{1}{2x^2} + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Đưa \\(\\frac{1}{2}\\) ra ngoài: \\(\\frac{1}{2} \\int \\frac{1}{x} dx\\)." },
+            { q: "Cho \\(f(x) = \\cos^2 x\\). Nguyên hàm của \\(f(x)\\) là:", options: ["\\(\\frac{x}{2} + \\frac{\\sin 2x}{4} + C\\)", "\\(\\frac{x}{2} - \\frac{\\sin 2x}{4} + C\\)", "\\(\\frac{\\sin^3 x}{3} + C\\)", "\\(-\\sin^2 x + C\\)"], ans: 0, theoryRef: "ly-thuyet-3", hint: "Hạ bậc \\(\\cos^2 x = \\frac{1+\\cos 2x}{2}\\)." },
+            { q: "Hàm số \\(F(x)\\) là nguyên hàm của \\(f(x)\\) trên \\(K\\). Khẳng định nào SAI?", options: ["\\(F(x) + C\\) cũng là nguyên hàm của \\(f(x)\\)", "Mọi nguyên hàm của \\(f(x)\\) đều có dạng \\(F(x) + C\\)", "\\(F'(x) = f(x)\\) với mọi \\(x \\in K\\)", "Nguyên hàm của \\(f(x)\\) là duy nhất"], ans: 3, theoryRef: "ly-thuyet-1", hint: "Nguyên hàm không duy nhất, nó là một họ." }
+        ];
+
+        const mockData = { 1: mockData1, 2: mockData2, 3: mockData3 };
+
+        // --- LOGIC XỬ LÝ ---
+        let currentQuizType = '';
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        let currentQuizData = [];
+        let timerInterval;
+        let timeLeft = 0;
+        let userAnswers = []; // Lưu đáp án người dùng chọn (dành cho mock exam)
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            // Reset nav active state
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('nav-' + id.split('-')[0]).classList.add('active'); // nav-quick, nav-mock, nav-theory
+
+            // Reset quiz view
+            if(id === 'quick-practice') {
+                document.getElementById('qp-menu').style.display = 'flex';
+                document.getElementById('qp-container').style.display = 'none';
+            }
+            if(id === 'mock-exam') {
+                document.getElementById('me-menu').style.display = 'flex';
+                document.getElementById('me-container').style.display = 'none';
+                clearInterval(timerInterval);
+            }
+        }
+
+        function startQuiz(type, setNumber) {
+            currentQuizType = type;
+            currentQuestionIndex = 0;
+            currentScore = 0;
+            userAnswers = [];
+            
+            if (type === 'quick') {
+                currentQuizData = quickData[setNumber];
+                document.getElementById('qp-menu').style.display = 'none';
+                document.getElementById('qp-container').style.display = 'block';
+                renderQuestion('qp-container');
+            } else {
+                currentQuizData = mockData[setNumber]; 
+                document.getElementById('me-menu').style.display = 'none';
+                document.getElementById('me-container').style.display = 'block';
+                
+                // Timer 45 phút cho 22 câu
+                timeLeft = 45 * 60; 
+                startTimer();
+                renderQuestion('me-container');
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            const timerEl = document.getElementById('timer-display');
+            if(timerEl) timerEl.innerText = "45:00";
+            
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Hết giờ làm bài!");
+                    submitQuiz(true);
+                    return;
+                }
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                const tEl = document.getElementById('timer-display');
+                if(tEl) tEl.innerText = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function renderQuestion(containerId) {
+            const container = document.getElementById(containerId);
+            const q = currentQuizData[currentQuestionIndex];
+            
+            let html = `
+                <div class="question-header">
+                    <span>Câu hỏi ${currentQuestionIndex + 1} / ${currentQuizData.length}</span>
+                    ${currentQuizType === 'mock' ? `<span class="timer" id="timer-display">${Math.floor(timeLeft/60).toString().padStart(2, '0')}:${(timeLeft%60).toString().padStart(2, '0')}</span>` : ''}
+                </div>
+                <h3 style="margin-bottom: 1.5rem; font-weight: normal; line-height: 1.6;">${q.q}</h3>
+                <ul class="options" id="options-list">
+            `;
+
+            q.options.forEach((opt, index) => {
+                let selectedClass = "";
+                if (currentQuizType === 'mock' && userAnswers[currentQuestionIndex] === index) {
+                    selectedClass = "selected";
+                }
+                html += `<li class="${selectedClass}" id="opt-${index}" onclick="checkAnswer(${index}, ${q.ans}, '${q.theoryRef}', '${q.hint}')">${String.fromCharCode(65 + index)}. ${opt}</li>`;
+            });
+
+            html += `</ul>`;
+            html += `<div id="feedback-area" class="feedback"></div>`;
+
+            html += `<div class="quiz-controls">`;
+            if (currentQuizType === 'quick') {
+                html += `<button class="btn-secondary" onclick="showSection('theory')">Thoát</button>`;
+                html += `<button class="btn-primary" id="btn-next" style="display:none;" onclick="nextQuestion('${containerId}')">Câu tiếp theo</button>`;
+            } else {
+                if (currentQuestionIndex > 0) {
+                    html += `<button class="btn-secondary" onclick="prevQuestion('${containerId}')">Câu trước</button>`;
+                } else {
+                    html += `<div style="visibility:hidden;"><button class="btn-secondary">Câu trước</button></div>`; // Giữ layout
+                }
+                
+                if (currentQuestionIndex < currentQuizData.length - 1) {
+                    html += `<button class="btn-primary" onclick="nextQuestion('${containerId}')">Câu tiếp theo</button>`;
+                } else {
+                    html += `<button class="btn-primary" onclick="submitQuiz(false)">Nộp bài</button>`;
+                }
+            }
+            html += `</div>`;
+
+            container.innerHTML = html;
+
+            // Render MathJax cho nội dung mới
+            if (window.MathJax) {
+                MathJax.typesetPromise([container]).catch(function (err) {
+                    console.error(err.message);
+                });
+            }
+
+            // Nếu ở chế độ Mock và đã chọn đáp án trước đó, hiển thị lại trạng thái
+            if (currentQuizType === 'mock' && userAnswers[currentQuestionIndex] !== undefined) {
+                highlightMockSelection(userAnswers[currentQuestionIndex]);
+            }
+        }
+
+        function checkAnswer(selectedIndex, correctIndex, theoryRef, hint) {
+            const list = document.getElementById('options-list');
+            
+            if (currentQuizType === 'quick') {
+                // Chống chọn lại
+                if (list.children[0].classList.contains('disabled')) return;
+
+                Array.from(list.children).forEach(li => li.classList.add('disabled'));
+
+                if (selectedIndex === correctIndex) {
+                    list.children[selectedIndex].classList.add('correct');
+                    currentScore++;
+                } else {
+                    list.children[selectedIndex].classList.add('wrong');
+                    list.children[correctIndex].classList.add('correct');
+                }
+
+                const feedbackBox = document.getElementById('feedback-area');
+                feedbackBox.classList.add('show');
+                if (selectedIndex === correctIndex) {
+                    feedbackBox.classList.add('success');
+                    feedbackBox.innerHTML = `<strong>Chính xác!</strong>`;
+                } else {
+                    feedbackBox.classList.add('error');
+                    feedbackBox.innerHTML = `<strong>Chưa đúng!</strong> ${hint}<br><br>👉 <a class="link-theory" onclick="showSection('theory'); setTimeout(()=>document.getElementById('${theoryRef}').scrollIntoView({behavior: 'smooth'}), 100);">Bấm vào đây để ôn lại lý thuyết phần này</a>`;
+                }
+                document.getElementById('btn-next').style.display = 'inline-block';
+                
+                // Render MathJax cho feedback (do hint chứa công thức)
+                if (window.MathJax) MathJax.typesetPromise([feedbackBox]).catch(err => console.log(err));
+            } else {
+                // Mock Exam: Lưu đáp án, đổi màu, không hiện đáp án đúng
+                userAnswers[currentQuestionIndex] = selectedIndex;
+                highlightMockSelection(selectedIndex);
+            }
+        }
+
+        function highlightMockSelection(selectedIndex) {
+            const list = document.getElementById('options-list');
+            Array.from(list.children).forEach(li => li.classList.remove('selected'));
+            if (list.children[selectedIndex]) {
+                list.children[selectedIndex].classList.add('selected');
+            }
+        }
+
+        function nextQuestion(containerId) {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < currentQuizData.length) {
+                renderQuestion(containerId);
+            } else {
+                if (currentQuizType === 'quick') {
+                    finishQuickPractice();
+                }
+            }
+        }
+
+        function prevQuestion(containerId) {
+            currentQuestionIndex--;
+            renderQuestion(containerId);
+        }
+
+        function finishQuickPractice() {
+            const container = document.getElementById('qp-container');
+            container.innerHTML = `
+                <div class="result-box">
+                    <h2>Hoàn thành luyện tập!</h2>
+                    <div class="score-circle">${currentScore * 10}%</div>
+                    <p class="evaluation">Bạn đã trả lời đúng <strong>${currentScore}/${currentQuizData.length}</strong> câu.</p>
+                    <p class="suggestion">Hãy xem lại các câu sai và ôn tập lý thuyết tương ứng nhé!</p>
+                    <button class="btn-primary" style="margin-top: 1rem;" onclick="showSection('quick-practice')">Làm bộ khác</button>
+                </div>
+            `;
+        }
+
+        function submitQuiz(isTimeOut) {
+            clearInterval(timerInterval);
+            
+            if (!isTimeOut) {
+                if (!confirm("Bạn có chắc chắn muốn nộp bài? Các câu chưa làm sẽ tính là sai.")) {
+                    if (currentQuizType === 'mock') startTimer();
+                    return;
+                }
+            }
+
+            // Tính điểm cho Mock Exam
+            currentScore = 0;
+            for (let i = 0; i < currentQuizData.length; i++) {
+                if (userAnswers[i] === currentQuizData[i].ans) {
+                    currentScore++;
+                }
+            }
+
+            const container = document.getElementById('me-container');
+            const total = currentQuizData.length;
+            const scorePercent = (currentScore / total) * 100;
+            
+            let evalText = "";
+            let suggestionText = "";
+
+            if (scorePercent >= 80) {
+                evalText = "Xuất sắc! Bạn đã nắm rất vững kiến thức về Nguyên hàm.";
+                suggestionText = "Hãy tiếp tục phát huy và chuyển sang các chuyên đề khó hơn (Tích phân, Ứng dụng hình học).";
+            } else if (scorePercent >= 50) {
+                evalText = "Khá tốt! Bạn đã hiểu bài nhưng còn vài lỗi sai sót.";
+                suggestionText = "Hãy xem lại kỹ Bảng nguyên hàm cơ bản và các công thức mở rộng (hàm hợp, hệ số 1/a). Lưu ý lỗi quên +C hoặc thiếu dấu giá trị tuyệt đối.";
+            } else {
+                evalText = "Cần cố gắng thêm! Điểm số chưa cao.";
+                suggestionText = "Đừng nản chí. Hãy quay lại tab Lý thuyết, đọc kỹ định nghĩa và học thuộc Bảng nguyên hàm. Làm lại các ví dụ trong sách trước khi thi lại.";
+            }
+
+            container.innerHTML = `
+                <div class="result-box">
+                    <h2>Tổng Kết Bài Thi</h2>
+                    <div class="score-circle" style="background: ${scorePercent >= 50 ? '#28a745' : '#dc3545'};">
+                        ${currentScore}/${total}
+                    </div>
+                    <p class="evaluation"><strong>${evalText}</strong></p>
+                    <div class="suggestion">
+                        <h4>Gợi ý ôn tập:</h4>
+                        <p>${suggestionText}</p>
+                    </div>
+                    <button class="btn-primary" style="margin-top: 1.5rem;" onclick="showSection('mock-exam')">Quay lại danh sách đề</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
